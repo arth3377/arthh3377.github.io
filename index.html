@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Checklist Sederhana</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 8px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .task {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .task input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .task.completed span {
+            text-decoration: line-through;
+            color: #888;
+        }
+        .delete-btn {
+            margin-left: auto;
+            background-color: #ff4444;
+        }
+        .delete-btn:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Aplikasi Checklist</h1>
+    
+    <div class="input-container">
+        <input type="text" id="taskInput" placeholder="Masukkan tugas baru...">
+        <button onclick="addTask()">Tambah</button>
+    </div>
+
+    <div id="taskList">
+        <!-- Daftar tugas akan ditampilkan di sini -->
+    </div>
+
+    <script>
+        // Menyimpan daftar tugas
+        let tasks = [];
+
+        // Fungsi untuk menambah tugas baru
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const taskText = input.value.trim();
+            
+            if (taskText) {
+                // Membuat objek tugas baru
+                const task = {
+                    id: Date.now(), // Menggunakan timestamp sebagai ID unik
+                    text: taskText,
+                    completed: false
+                };
+                
+                // Menambahkan ke array tasks
+                tasks.push(task);
+                
+                // Membersihkan input
+                input.value = '';
+                
+                // Memperbarui tampilan
+                renderTasks();
+                
+                // Menyimpan ke localStorage
+                saveTasks();
+            }
+        }
+
+        // Fungsi untuk menandai tugas selesai/belum
+        function toggleTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                renderTasks();
+                saveTasks();
+            }
+        }
+
+        // Fungsi untuk menghapus tugas
+        function deleteTask(taskId) {
+            tasks = tasks.filter(t => t.id !== taskId);
+            renderTasks();
+            saveTasks();
+        }
+
+        // Fungsi untuk menampilkan semua tugas
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = `task ${task.completed ? 'completed' : ''}`;
+                
+                taskElement.innerHTML = `
+                    <input type="checkbox" 
+                           ${task.completed ? 'checked' : ''} 
+                           onchange="toggleTask(${task.id})">
+                    <span>${task.text}</span>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">Hapus</button>
+                `;
+                
+                taskList.appendChild(taskElement);
+            });
+        }
+
+        // Fungsi untuk menyimpan tugas ke localStorage
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Fungsi untuk memuat tugas dari localStorage
+        function loadTasks() {
+            const savedTasks = localStorage.getItem('tasks');
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+                renderTasks();
+            }
+        }
+
+        // Memuat tugas saat halaman dimuat
+        loadTasks();
+
+        // Menambahkan fungsi untuk menangani tombol Enter
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+    </script>
+</body>
+</html>
